@@ -27,9 +27,12 @@ static void basic_tree_test(struct sc_test_context *ctx)
 
     for (size_t i = 0; i < 100; i++) {
         struct node *n = malloc(sizeof(struct node));
-        n->val = random() % 10000;
 
-        sct_assert(RB_INSERT(node_tree, &head, n));
+        do {
+            n->val = random() % 10000;
+        } while (RB_FIND(node_tree, &head, n));
+
+        RB_INSERT(node_tree, &head, n);
     }
 
     int last = -1;
