@@ -9,10 +9,7 @@ else()
     option(LINK_ASAN "Link in address sanatizer" OFF)
 endif()
 
-set(LIB_SRCS
-    src/dummy.c)
-
-add_library(sweetc ${LIB_SRCS})
+add_library(sweetc "")
 target_include_directories(sweetc
         PUBLIC include
 )
@@ -20,6 +17,8 @@ set_target_properties(sweetc
     PROPERTIES
     C_STANDARD 11
 )
+
+add_subdirectory(src)
 
 if (LINK_ASAN)
     target_compile_options(sweetc PUBLIC -fsanitize=address)
@@ -29,7 +28,7 @@ endif()
 option(BUILD_TESTING "Build testing framework" ON)
 
 if(BUILD_TESTING OR BUILD_TESTS OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    add_subdirectory(src/testing)
+    add_subdirectory(src/testing testing)
 endif()
 
 if (BUILD_TESTS OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")

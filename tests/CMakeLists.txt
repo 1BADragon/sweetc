@@ -6,3 +6,4 @@ endmacro()
 
 create_test(list-test list.c)
 create_test(tree-test tree.c)
+create_test(string-test string.c)
