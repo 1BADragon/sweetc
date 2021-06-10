@@ -5,7 +5,8 @@
 
 void *sc_object_trait(struct sc_object *obj, uint32_t trait)
 {
+    assert(obj);
+    assert(obj->type);
     void *t = obj->type->triats[trait];
-    assert(t);
     return t;
 }

@@ -10,6 +10,10 @@ else()
 endif()
 
 add_library(sweetc "")
+target_compile_options(sweetc PRIVATE -Wall -Wextra -Wbad-function-cast -Wformat=2
+    -Wmissing-include-dirs -Wmissing-declarations -Wmissing-prototypes -Wsequence-point
+    -Wshadow -Wstrict-prototypes -Wunreachable-code -Wunused-but-set-parameter
+    -Wwrite-strings)
 target_include_directories(sweetc
         PUBLIC include
 )
@@ -28,6 +32,20 @@ endif()
 option(BUILD_TESTING "Build testing framework" ON)
 
 if(BUILD_TESTING OR BUILD_TESTS OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    target_compile_options(sweetc PUBLIC -fprofile-arcs -ftest-coverage)
+    target_link_options(sweetc PUBLIC -fprofile-arcs -ftest-coverage)
+
+    add_custom_target(coverage
+        COMMAND gcovr -r ${PROJECT_SOURCE_DIR}/src --object-directory ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/sweetc.dir/src/
+        )
+
+    add_custom_target(coverage-html
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/coverage_html
+        COMMAND gcovr -r ${PROJECT_SOURCE_DIR}/src
+            --object-directory ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/sweetc.dir/src/
+            --html-details coverage_html/coverage
+        )
+
     add_subdirectory(src/testing testing)
 endif()
 
