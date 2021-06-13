@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 /**
- * @group SC_TRAITS
+ * @file triats.h
  * @brief Object traits define the various capabilities of a given type.
  */
 

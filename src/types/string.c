@@ -145,7 +145,7 @@ int sc_string_append_raw(sc_string_t *str, const uint8_t *more, size_t len)
     return 0;
 }
 
-int sc_string_append_scstr(sc_string_t *str, sc_string_t *more)
+int sc_string_append_scstr(sc_string_t *str, const sc_string_t *more)
 {
     assert(str);
     assert(more);
@@ -203,10 +203,6 @@ int sc_string_raw_cmp(sc_string_t *str, const uint8_t *rhs, size_t len)
 
     int rc = memcmp(str->data, rhs, cmp_len);
 
-    if (rc == 0) {
-        rc = str->loglen - len;
-    }
-
     return rc;
 }
 
@@ -219,6 +215,7 @@ static void sc_string_free(sc_string_t *str)
 
 static int sc_string_cmp(sc_string_t *a, sc_string_t *b)
 {
+    assert(b->hdr.type == &sc_string_type);
     return sc_string_raw_cmp(a, b->data, b->loglen);
 }
 
