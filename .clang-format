@@ -74,6 +74,8 @@ ForEachMacros:
   - RB_FOREACH
   - LIST_FOREACH_SAFE
   - LIST_FOREACH
+  - list_for_each_entry_safe
+  - list_for_each_entry
 IncludeBlocks:   Regroup
 IncludeCategories:
   - Regex: '^<sc/'

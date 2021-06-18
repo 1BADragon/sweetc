@@ -2,7 +2,7 @@
 #include <string.h>
 #include <time.h>
 
-#include <sc/containers/tree.h>
+#include <sc/containers/raw/tree.h>
 #include <sc/testing/test_harness.h>
 
 struct node {
@@ -54,8 +54,8 @@ static struct sc_test tests[] = {
     { NULL },
 };
 
-static struct sc_test_harness th[] = {
-    "tree",
+static struct sc_test_harness th = {
+    "raw_tree",
     tests,
     NULL,
     NULL,
@@ -63,7 +63,7 @@ static struct sc_test_harness th[] = {
 
 int main()
 {
-    return run_tests(th, NULL);
+    return run_tests(&th, NULL);
 }
 
 static int cmp_nodes(struct node *a, struct node *b)

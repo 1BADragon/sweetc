@@ -1,77 +1,125 @@
-#include <assert.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #include <sc/containers/list.h>
+#include <sc/macros.h>
 #include <sc/testing/test_harness.h>
+#include <sc/types/string.h>
 
-struct node {
-    struct list_head list;
-    int val;
-};
-
-static void basic_add_tail(struct sc_test_context *ctx)
+void basic_test(struct sc_test_context *ctx)
 {
-    struct list_head head;
-    struct node *at;
-    struct node *safe;
-
-    INIT_LIST_HEAD(&head);
-
-    for (int i = 0; i < 100; i++) {
-        struct node *new = malloc(sizeof(struct node));
-
-        new->val = i;
-        list_add_tail(&new->list, &head);
-    }
-
-    int i = 0;
-    list_for_each_entry_safe(at, safe, &head, list)
-    {
-        sct_assert_eq(i++, at->val);
-
-        list_del(&at->list);
-        free(at);
-    }
+    sct_assert(ctx->test_data);
 }
 
-static void basic_add_front(struct sc_test_context *ctx)
+void test_free_on_delete(struct sc_test_context *ctx)
 {
-    struct list_head head;
-    struct node *at;
-    struct node *safe;
+    sc_list_t *lst = ctx->test_data;
 
-    INIT_LIST_HEAD(&head);
+    sc_list_push_front(lst, (struct sc_object *)sc_string_build_str("test string"));
+}
 
-    for (int i = 0; i < 100; i++) {
-        struct node *node = malloc(sizeof(struct node));
+void test_push_pop(struct sc_test_context *ctx)
+{
+    char buf[32];
+    sc_string_t *tmp;
+    sc_list_t *lst = ctx->test_data;
 
-        node->val = i;
-        list_add(&node->list, &head);
+    sct_assert(sc_list_len(lst) == 0);
+
+    for (int i = 1; i <= 100; i++) {
+        sprintf(buf, "%d", i);
+        sct_assert(sc_list_push_front(lst, (struct sc_object *)sc_string_build_str(buf)) == 0);
     }
 
-    int i = 99;
-    list_for_each_entry_safe(at, safe, &head, list)
-    {
-        sct_assert_eq(i--, at->val);
+    sct_assert(sc_list_len(lst) == 100);
 
-        list_del(&at->list);
-        free(at);
+    tmp = (sc_string_t *)sc_list_front(lst);
+    sct_assert(sc_string_strncmp(tmp, "100", 3) == 0);
+
+    for (int i = 1; i <= 100; i++) {
+        sprintf(buf, "%d", i);
+        tmp = (sc_string_t *)sc_list_pop_back(lst);
+        sct_assert(tmp);
+        sct_assert(sc_string_strncmp(tmp, buf, strlen(buf)) == 0);
+        sc_object_free(tmp);
     }
 
-    sct_assert(list_empty(&head));
+    sct_assert(sc_list_len(lst) == 0);
+
+    for (int i = 1; i <= 100; i++) {
+        sprintf(buf, "%d", i);
+        sct_assert(sc_list_push_back(lst, (struct sc_object *)sc_string_build_str(buf)) == 0);
+    }
+
+    sct_assert(sc_list_len(lst) == 100);
+
+    tmp = (sc_string_t *)sc_list_back(lst);
+    sct_assert(sc_string_strncmp(tmp, "100", 3) == 0);
+
+    for (int i = 100; i >= 1; i--) {
+        sprintf(buf, "%d", i);
+        tmp = (sc_string_t *)sc_list_pop_back(lst);
+        sct_assert(tmp);
+        sct_assert(sc_string_len(tmp) == strlen(buf));
+        sct_assert(sc_string_strncmp(tmp, buf, strlen(buf)) == 0);
+        sc_object_free(tmp);
+    }
+
+    sct_assert(sc_list_len(lst) == 0);
+}
+
+void test_sorted(struct sc_test_context *ctx)
+{
+    char buf[32];
+    sc_list_t *lst = ctx->test_data;
+    sc_string_t *prev;
+    sc_string_t *curr;
+
+    srand(time(NULL));
+
+    for (int i = 0; i < 1000; ++i) {
+        int val = rand();
+        sprintf(buf, "%d", val);
+        sc_list_push_sorted(lst, (struct sc_object *)sc_string_build_str(buf));
+    }
+
+    prev = (sc_string_t *)sc_list_pop_front(lst);
+
+    while ((curr = (sc_string_t *)sc_list_pop_front(lst)) != NULL) {
+        sct_assert(sc_object_cmp(curr, prev) >= 0);
+        sc_object_free(prev);
+        prev = curr;
+    }
+
+    sc_object_free(prev);
+}
+
+void *test_init()
+{
+    sc_list_t *list = sc_list_init();
+
+    return list;
+}
+
+void test_deinit(sc_list_t *lst)
+{
+    sc_object_free(lst);
 }
 
 static struct sc_test tests[] = {
-    { "basic_add_tail", basic_add_tail },
-    { "basic_add_front", basic_add_front },
+    { "basic_test", &basic_test },
+    { "test_free_on_delete", &test_free_on_delete },
+    { "test_push_pop", &test_push_pop },
+    { "test_sorted", &test_sorted },
     { NULL },
 };
 
 static struct sc_test_harness th = {
     "list",
     tests,
-    NULL,
-    NULL,
+    (sc_test_init_f)test_init,
+    (sc_test_deinit_f)test_deinit,
 };
 
 int main()

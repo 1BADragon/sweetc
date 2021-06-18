@@ -203,11 +203,22 @@ int sc_string_raw_cmp(sc_string_t *str, const uint8_t *rhs, size_t len)
 
     int rc = memcmp(str->data, rhs, cmp_len);
 
+    if (0 == rc) {
+        if (str->loglen > len) {
+            return 1;
+        } else if (str->loglen < len) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
     return rc;
 }
 
 static void sc_string_free(sc_string_t *str)
 {
+    assert(str->hdr.type == &sc_string_type);
     sc_free(str->data);
     str->data = NULL;
     sc_free(str);
@@ -215,11 +226,14 @@ static void sc_string_free(sc_string_t *str)
 
 static int sc_string_cmp(sc_string_t *a, sc_string_t *b)
 {
+    assert(a->hdr.type == &sc_string_type);
     assert(b->hdr.type == &sc_string_type);
+
     return sc_string_raw_cmp(a, b->data, b->loglen);
 }
 
 static size_t sc_string_hash(sc_string_t *str)
 {
+    assert(str->hdr.type == &sc_string_type);
     return djb2(str->data, str->loglen);
 }
