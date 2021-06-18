@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(sweetc C)
 
-option(BUILD_TESTS "Builds project test apps" OFF)
+option(BUILD_TESTS "Builds project test apps" ON)
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     option(LINK_ASAN "Link in address sanatizer" ON)
